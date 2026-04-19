@@ -1,0 +1,11 @@
+# Ambientes virtuais
+venv/
+__pycache__/
+*.pyc
+
+# Banco de dados (Dados sensíveis e locais)
+*.db
+
+# IDEs
+.vscode/
+.idea/
