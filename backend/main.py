@@ -34,11 +34,11 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)
     db.refresh(new_user)
     return new_user
 
-    # Suas rotas GET antigas continuam abaixo...
-    @app.get("/")
-    async def root():
-        return {"message": "API do Salão e Banco de Dados operando!"}
+# Suas rotas GET antigas continuam abaixo...
+@app.get("/")
+async def root():
+    return {"message": "API do Salão e Banco de Dados operando!"}
     
-    @app.get("/health")
-    async def health_check():
-        return {"status": "healthy"}
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}

@@ -14,3 +14,13 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
 
     is_active = Column(Boolean, default=True)
+
+    # A nova tabela
+    class Client(Base):
+        __tablename__ = "clients"
+
+        id = Column(Integer, primary_key=True, index=True)
+        nome = Column(String, index=True)
+        telefone = Column(String)
+        email = Column(String, nullable=True)
+        observacoes = Column(String, nullable=True)
