@@ -1,31 +1,57 @@
 from datetime import datetime, timedelta, timezone
+
 from jose import JWTError, jwt
 from typing import Optional
+from passlib.context import CryptContext
 
-# AVISO DE SEGURANÇA: Mantenha sua chave secreta em segredo!
-# Em um ambiente de produção real, utilize variáveis de ambiente (.env)
+# --- CONFIGURAÇÕES DE SEGURANÇA ---
+# Futuramente, utilize: os.getenv("SECRET_KEY")
 SECRET_KEY = "sua_chave_super_segura_aqui"
-ALGORITHM = "HS256"
+ALGORITHM  = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-def create_acess_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """
-    Gera um token de acesso JWT (JSON Web Token).
-    """
-    to_encode = data.copy()
+# Configuração do Hash de Senha (Bcrypt)
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    # Obtém o tempo atual já com o fuso horário UTC (forma moderna)
+# --- FUNÇÕES DE SENHA ---
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verifica se a senha em texto puro coincide com o hash do banco."""
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    """Gera um hash seguro da senha para ser salvo no banco de dados.""" 
+    return pwd_context.hash(password)
+
+# --- FUNÇÕES DE JWT (TOKEN) ---
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """Gera um token de acesso JWT com tempo de expiração."""
+    to_encode = data.copy()
     now = datetime.now(timezone.utc)
 
-    # Define o tempo de expiração do token
     if expires_delta:
         expire = now + expires_delta
     else:
         expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    # Adiciona o campo 'exp' (expiration) aos dados do token
     to_encode.update({"exp": expire})
-
-    # Codifica os dados e assina o token com a chave secreta
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+
+# --- LÓGICA DE AUTENTICAÇÃO ---
+def authenticate_user(username, password):
+    # Dicionário de teste
+    user_db = {
+        "admin": {
+            "username": "admin",
+            "hashed_password": get_password_hash("123456")
+        }
+    }
+
+    user = user_db.get(username)
+    if not user:
+        return False
+    
+    # IMPORTANTE: Verifique se os nomes das funções batem
+    if not verify_password(password, user["hashed_password"]):
+        return False
+    
+    return user

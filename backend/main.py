@@ -1,6 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 import models, schemas, security, database
+# Importando as funções do seu auth.py
+from auth import authenticate_user, create_access_token
 
 # Garante que as tabelas sejam criadas
 models.Base.metadata.create_all(bind=database.engine)
@@ -85,6 +88,23 @@ def delete_client(client_id: int, db: Session = Depends(database.get_db)):
     db.delete(db_client)
     db.commit()
     return {"message": f"Cliente {client_id} removida com sucesso!"}
+
+@app.post("/token")
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    # Tenta autenticar o usuário com a lógica do auth.py
+    user = authenticate_user(form_data.username, form_data.password)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuário ou senha incorretos",
+            headers={"www-Authenticate": "Bearer"},
+        )
+
+    # Se passar, gera o Token JWT
+    access_token = create_access_token(data={"sub": user["username"]})
+
+    return {"acess_token": access_token, "token_type": "bearer"} 
 
 # Suas rotas GET antigas continuam abaixo...
 @app.get("/")
