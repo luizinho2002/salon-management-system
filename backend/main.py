@@ -34,6 +34,58 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(database.get_db)
     db.refresh(new_user)
     return new_user
 
+# --- ROTAS DE CLIENTES ---
+@app.post("/clients", response_model=schemas.ClientResponse)
+def create_client(client: schemas.ClientCreate, db: Session = Depends(database.get_db)):
+    # Cria a instância do modelo Client com os dados recebidos
+    new_client = models.Client(
+        nome=client.nome,
+        telefone=client.telefone,
+        email=client.email,
+        observacoes=client.observacoes
+    )
+
+    db.add(new_client)
+    db.commit()
+    db.refresh(new_client)
+    return new_client
+
+@app.get("/clients", response_model=list[schemas.ClientResponse])
+def get_clients(db: Session = Depends(database.get_db)):
+    # Retorna todas as clientes cadastradas
+    return db.query(models.Client).all()
+
+
+# --- ATUALIZAR CLIENTE (UPDATE) ---
+@app.put("/clients/{clients_id}", response_model=schemas.ClientResponse)
+def update_client(client_id: int, updated_data: schemas.ClientCreate, db: Session = Depends(database.get_db)):
+    db_client = db.query(models.Client).filter(models.Client.id == client_id).first()
+
+    if not db_client:
+        raise HTTPException(status_code=404, detail="Cliente não encontrada.")
+    
+    # Atualiza os campos
+    db_client.nome = updated_data.nome
+    db_client.telefone = updated_data.telefone
+    db_client.email = updated_data.email
+    db_client.observacoes = updated_data.observacoes
+
+    db.commit()
+    db.refresh(db_client)
+    return db_client
+
+# --- DELETAR CLIENTE (DELETE) ---
+@app.delete("/clients/{client_id}")
+def delete_client(client_id: int, db: Session = Depends(database.get_db)):
+    db_client = db.query(models.Client).filter(models.Client.id == client_id).first() 
+
+    if not db_client:
+        raise HTTPException(status_code=404, detail="Cliente não encontrada.")
+    
+    db.delete(db_client)
+    db.commit()
+    return {"message": f"Cliente {client_id} removida com sucesso!"}
+
 # Suas rotas GET antigas continuam abaixo...
 @app.get("/")
 async def root():
