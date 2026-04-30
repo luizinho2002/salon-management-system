@@ -1,0 +1,27 @@
+# Ambientes Virtuais (Essencial para não subir bibliotecas locais)
+venv/
+env/
+.env
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Banco de Dados (Crucial para segurança e privacidade)
+# Não subimos o salao.db para proteger os dados das clientes
+*.db
+*.sqlite3
+
+# FastAPI / Uvicorn / Testes
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Variáveis de Ambiente e Segredos (Futuros tokens de segurança)
+.env
+.flaskenv
+auth_tokens.txt
